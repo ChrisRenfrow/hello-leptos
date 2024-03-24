@@ -70,10 +70,70 @@ fn IterationVecPatt() -> impl IntoView {
 }
 
 #[component]
+fn DynamicList(initial_len: usize) -> impl IntoView {
+    let mut next_counter_id = initial_len;
+    // Generate list of counters based on initial length, including the id for each
+    let initial_counters = (0..initial_len)
+        .map(|id| (id, create_signal(id + 1)))
+        .collect::<Vec<_>>();
+    // Store initial list as a signal for modification over time.
+    let (counters, set_counters) = create_signal(initial_counters);
+
+    let add_counter = move |_| {
+        let sig = create_signal(next_counter_id + 1);
+        // add counter and signal to list of counters
+        set_counters.update(move |counters| counters.push((next_counter_id, sig)));
+        // increment id to ensure it's unique
+        next_counter_id += 1
+    };
+
+    view! {
+        <strong>"Dynamic list and items using <For/>"</strong>
+        <div>
+            <button on:click=add_counter>
+                "Add Counter"
+            </button>
+            <ul>
+                <For each=counters
+                     // Using an index as a key is generally bad practice unless your list can only grow
+                     key=|counter| counter.0
+                     // Define the children of the For element
+                     // Receives the items from the each iterator
+                     children=move |(id, (count, set_count))| {
+                         view! {
+                             <li>
+                                 <button
+                                    // Increment count
+                                    on:click=move |_| set_count.update(|n| *n += 1)
+                                 >
+                                    {count}
+                                </button>
+                                <button
+                                    on:click=move |_| {
+                                        set_counters.update(|counters| {
+                                            // TIL: Vec::retain - Retains elements that match the predicate in their original order
+                                            // In this case, all elements that don't match the removed id
+                                            counters.retain(|(counter_id, _)| counter_id != &id)
+                                        });
+                                    }
+                                >
+                                    "Remove"
+                                </button>
+                             </li>
+                         }
+                     }
+                />
+            </ul>
+        </div>
+    }
+}
+
+#[component]
 fn Iteration() -> impl IntoView {
     view! {
         <h2>3.4 Iteration</h2>
         <IterationVecPatt />
+        <DynamicList initial_len=5 />
     }
 }
 
