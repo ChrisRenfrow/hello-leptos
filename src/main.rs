@@ -5,6 +5,7 @@ mod forms_and_inputs;
 mod iteration;
 
 use basic_components::*;
+use forms_and_inputs::*;
 use iteration::*;
 
 fn main() {
@@ -21,5 +22,6 @@ fn App() -> impl IntoView {
         <BasicComponent/>
         <Iteration/>
         <IterationComplex/>
+        <FormsAndInputs/>
     }
 }
