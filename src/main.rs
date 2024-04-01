@@ -4,18 +4,16 @@ fn main() {
     console_error_panic_hook::set_once();
 
     mount_to_body(|| {
-        view! {
-            <App/>
-        }
+        view! { <App/> }
     })
 }
 
 #[component]
 fn App() -> impl IntoView {
     view! {
-        <BasicComponent />
-        <Iteration />
-        <IterationComplex />
+        <BasicComponent/>
+        <Iteration/>
+        <IterationComplex/>
     }
 }
 
@@ -27,11 +25,10 @@ fn BasicComponent() -> impl IntoView {
     let double_count = move || count() * 2;
     view! {
         <h2>3.1 A Basic Component</h2>
-        <button
-            on:click=move |_| {
-                set_count.update(|n| *n += 1);
-            }
-        >
+        <button on:click=move |_| {
+            set_count.update(|n| *n += 1);
+        }>
+
             "Count++"
         </button>
         <br/>
@@ -45,8 +42,8 @@ fn BasicComponent() -> impl IntoView {
 fn Iteration() -> impl IntoView {
     view! {
         <h2>3.4 Iteration</h2>
-        <IterationVecPatt />
-        <DynamicList initial_len=5 />
+        <IterationVecPatt/>
+        <DynamicList initial_len=5/>
     }
 }
 
@@ -54,7 +51,7 @@ fn Iteration() -> impl IntoView {
 fn IterationComplex() -> impl IntoView {
     view! {
         <h2>3.5 Iterating over more complex data</h2>
-        <ComplexFor />
+        <ComplexFor/>
     }
 }
 
@@ -65,12 +62,7 @@ fn ProgressBar<F>(#[prop(default = 100)] max: u16, progress: F) -> impl IntoView
 where
     F: Fn() -> i32 + 'static,
 {
-    view! {
-        <progress
-            max=max
-            value=progress
-        />
-    }
+    view! { <progress max=max value=progress></progress> }
 }
 
 // 3.4
@@ -81,12 +73,9 @@ fn IterationVecPatt() -> impl IntoView {
         <strong>"Purely static"</strong>
         <p>{values.clone()}</p>
         <ul>
-            {
-                values.into_iter()
-                      .map(|n| view! { <li>{n}</li> })
-                      // The same as .collect::<Vec<_>>()
-                      .collect_view()
-            }
+
+            {values.into_iter().map(|n| view! { <li>{n}</li> }).collect_view()}
+
         </ul>
     };
 
@@ -102,11 +91,7 @@ fn IterationVecPatt() -> impl IntoView {
         .map(|(count, set_count)| {
             view! {
                 <li>
-                    <button
-                        on:click=move |_| set_count.update(|n| *n += 1)
-                    >
-                        {count}
-                    </button>
+                    <button on:click=move |_| set_count.update(|n| *n += 1)>{count}</button>
                 </li>
             }
         })
@@ -146,39 +131,35 @@ fn DynamicList(initial_len: usize) -> impl IntoView {
     view! {
         <strong>"Dynamic list and items using <For/>"</strong>
         <div>
-            <button on:click=add_counter>
-                "Add Counter"
-            </button>
+            <button on:click=add_counter>"Add Counter"</button>
             <ul>
-                <For each=counters
-                     // Using an index as a key is generally bad practice unless your list can only grow
-                     key=|counter| counter.0
-                     // Define the children of the For element
-                     // Receives the items from the each iterator
-                     children=move |(id, (count, set_count))| {
-                         view! {
-                             <li>
-                                 <button
-                                    // Increment count
-                                    on:click=move |_| set_count.update(|n| *n += 1)
-                                 >
-                                    {count}
-                                </button>
-                                <button
-                                    on:click=move |_| {
-                                        set_counters.update(|counters| {
-                                            // TIL: Vec::retain - Retains elements that match the predicate in their original order
-                                            // In this case, all elements that don't match the removed id
+                <For
+                    each=counters
+                    // Using an index as a key is generally bad practice unless your list can only grow
+                    key=|counter| counter.0
+                    // Define the children of the For element
+                    // Receives the items from the each iterator
+                    children=move |(id, (count, set_count))| {
+                        view! {
+                            <li>
+                                // Increment count
+                                <button on:click=move |_| {
+                                    set_count.update(|n| *n += 1)
+                                }>{count}</button>
+                                <button on:click=move |_| {
+                                    set_counters
+                                        .update(|counters| {
                                             counters.retain(|(counter_id, _)| counter_id != &id)
                                         });
-                                    }
-                                >
+                                }>
+
                                     "Remove"
                                 </button>
-                             </li>
-                         }
-                     }
+                            </li>
+                        }
+                    }
                 />
+
             </ul>
         </div>
     }
@@ -222,20 +203,15 @@ fn ComplexFor() -> impl IntoView {
     // This won't trigger element refreshes.
     let problem = view! {
         <button on:click=move |_| {
-            set_data.update(|data| {
-                for row in data {
-                    row.value *= 2;
-                }
-            });
+            set_data
+                .update(|data| {
+                    for row in data {
+                        row.value *= 2;
+                    }
+                });
             logging::log!("{:?}", data.get());
-        }>
-            "Update Values"
-        </button>
-        <For
-            each=data
-            key=|state| state.key.clone()
-            let:child
-        >
+        }>"Update Values"</button>
+        <For each=data key=|state| state.key.clone() let:child>
             <p>{child.value}</p>
         </For>
     };
@@ -245,15 +221,14 @@ fn ComplexFor() -> impl IntoView {
     // adjustment to the inner text value.
     let change_key = view! {
         <button on:click=move |_| {
-            set_data.update(|data| {
-                for row in data {
-                    row.value *= 2;
-                }
-            });
+            set_data
+                .update(|data| {
+                    for row in data {
+                        row.value *= 2;
+                    }
+                });
             logging::log!("{:?}", data.get());
-        }>
-            "Update values"
-        </button>
+        }>"Update values"</button>
         <For
             each=data
             // Link the key with the element's value.
@@ -263,7 +238,6 @@ fn ComplexFor() -> impl IntoView {
         >
             <p>{child.value}</p>
         </For>
-
     };
 
     let initial_data_imp = vec![
@@ -286,20 +260,15 @@ fn ComplexFor() -> impl IntoView {
     // This option is highly efficient, but is cumbersome
     let nested_signals = view! {
         <button on:click=move |_| {
-            set_data_imp.update(|data| {
-                for row in data {
-                    row.value.update(|value| *value *= 2);
-                }
-            });
+            set_data_imp
+                .update(|data| {
+                    for row in data {
+                        row.value.update(|value| *value *= 2);
+                    }
+                });
             logging::log!("{:?}", data_imp.get());
-        }>
-            "Update values"
-        </button>
-        <For
-            each=data_imp
-            key=|state| state.key.clone()
-            let:child
-        >
+        }>"Update values"</button>
+        <For each=data_imp key=|state| state.key.clone() let:child>
             <p>{child.value}</p>
         </For>
     };
@@ -310,15 +279,14 @@ fn ComplexFor() -> impl IntoView {
     // But it comes at the cost of some additional chores and safety precautions.
     let memoized_slices = view! {
         <button on:click=move |_| {
-            set_data.update(|data| {
-                for row in data {
-                    row.value *= 2;
-                }
-            });
+            set_data
+                .update(|data| {
+                    for row in data {
+                        row.value *= 2;
+                    }
+                });
             logging::log!("{:?}", data.get());
-        }>
-            "Update Values"
-        </button>
+        }>"Update Values"</button>
         <For
             each=move || data().into_iter().enumerate()
             key=|(_, state)| state.key.clone()
@@ -326,9 +294,7 @@ fn ComplexFor() -> impl IntoView {
                 let value = create_memo(move |_| {
                     data.with(|data| data.get(index).map(|d| d.value).unwrap_or(0))
                 });
-                view! {
-                    <p>{value}</p>
-                }
+                view! { <p>{value}</p> }
             }
         />
     };
@@ -336,25 +302,20 @@ fn ComplexFor() -> impl IntoView {
     view! {
         <button on:click=move |_| {
             set_data.set(initial_data.clone());
-            // This doesn't work as each value is a signal.
-            // There would need to be some extra book-keeping involved to preserve the initial value.
-            // This demonstrates an aspect of nested signals in that they are cumbersome to work with.
             set_data_imp.set(initial_data_imp.clone());
-        }>
-            "Reset values"
-        </button>
-        <br />
+        }>"Reset values"</button>
+        <br/>
         <strong>Problem (no update)</strong>
-        <br />
+        <br/>
         {problem}
         <strong>Option 1: Change the Key</strong>
-        <br />
+        <br/>
         {change_key}
         <strong>Option 2: Nested Signals</strong>
-        <br />
+        <br/>
         {nested_signals}
         <strong>Option 3: Memoized Slices</strong>
-        <br />
+        <br/>
         {memoized_slices}
     }
 }
